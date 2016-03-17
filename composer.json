@@ -1,5 +1,5 @@
 {
-	"name": "rabbasa/helper",
+	"name": "hnr/helper",
 	"description": "hnrHelper especially for uploading and retrieve your uploaded files (images or documentes) outside yii web directory for security reason.",
 	"version": "0.1",
     "type": "component",
