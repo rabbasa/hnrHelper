@@ -1,0 +1,21 @@
+{
+	"name": "rabbasa/helper",
+	"description": "hnrHelper especially for uploading and retrieve your uploaded files (images or documentes) outside yii web directory for security reason.",
+	"version": "0.1",
+    "type": "component",
+	"keywords": ["yii2 helper", "upload image", "resize image", "secure folder"],
+	"homepage": "https://github.com/rabbasa/hnrHelper#readme",
+	"license": "MIT",
+    "authors": [
+        {
+            "name": "Harris Rabbasa"
+        }
+    ]
+	"support": {
+		"email": "email"
+	},
+	"require": {
+		"yiisoft/yii2-imagine": "~2.0.0"
+	}
+}
+

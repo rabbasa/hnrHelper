@@ -6,7 +6,7 @@
  */
 
 
-namespace common\components;
+namespace rabbasa\helper;
 
 use Yii;
 
@@ -159,5 +159,140 @@ class Helper
 		}
 		
 	}
+
+    public static function thumbnail($filename, $width, $height, $mode = \Imagine\Image\ManipulatorInterface::THUMBNAIL_OUTBOUND, $isCropped=false, $isFollowSize=false)
+    {
+        // $box = new \Imagine\Image\Box($width, $height);
+        $img = \yii\imagine\Image::getImagine()->open(Yii::getAlias($filename));
+
+    	if($height!=0){
+    		$box = new \Imagine\Image\Box($width, $height);
+    	}else{
+    		$new_height = floor($width * ($img->getSize()->getHeight() / $img->getSize()->getWidth()));
+    		$box = new \Imagine\Image\Box($width, $new_height);
+    		$height=$new_height;
+    	}
+
+        if (($img->getSize()->getWidth() <= $box->getWidth() && $img->getSize()->getHeight() <= $box->getHeight()) || (!$box->getWidth() && !$box->getHeight())) {
+        	if($isFollowSize){
+        		#kalau ukurannya ngikut
+        		#file nya dibesarkan secara proporsional
+        		$boxNew = new \Imagine\Image\Box($width, $width * ($img->getSize()->getHeight() / $img->getSize()->getWidth()) );
+        		if($boxNew->getHeight() > $height){
+        			$boxNew = new \Imagine\Image\Box( $height * ($img->getSize()->getWidth() / $img->getSize()->getHeight()) , $height );
+        		}
+        		$img->resize($boxNew);
+        	}else{
+        		#kalau ukuran lebih besar dari gambar asli, keluarkan gambar aslinya
+        		# isFollowSize = false
+            	return $img->copy();
+       		}
+        }
+
+        if($isCropped){ #maksudnya fit width
+        	$boxNew = new \Imagine\Image\Box($width, $width * ($img->getSize()->getHeight() / $img->getSize()->getWidth()) );
+			if($boxNew->getHeight() < $height){ #kalau crop tandanya < 
+				$boxNew = new \Imagine\Image\Box( $height * ($img->getSize()->getWidth() / $img->getSize()->getHeight()) , $height );
+			}
+			$img->resize($boxNew);
+			if($width < $img->getSize()->getWidth()){
+				$ukuran = $img->getSize();
+				$mulai = ceil($ukuran->getWidth() - $width) / 2;
+			}else{
+				$mulai = 0;
+			}
+			// echo $mulai;exit;
+			$img->crop(new \Imagine\Image\Point($mulai,0),$box);
+		}else{
+			$img = $img->thumbnail($box, $mode);
+		}
+
+        // create empty image to preserve aspect ratio of thumbnail
+        $thumb = \yii\imagine\Image::getImagine()->create($box, new \Imagine\Image\Color('FFF', 100));
+
+        // calculate points
+        $size = $img->getSize();
+
+        $startX = 0;
+        $startY = 0;
+        if ($size->getWidth() < $width) {
+            $startX = ceil($width - $size->getWidth()) / 2;
+        }
+        if ($size->getHeight() < $height) {
+            $startY = ceil($height - $size->getHeight()) / 2;
+        }
+
+        $thumb->paste($img, new \Imagine\Image\Point($startX, $startY));
+
+        return $thumb;
+    }
+
+    /**
+     * @param isProporsional if true, nanti width akan jadi acuan
+     */
+    public static function getFileNow($filename, $filename_real, $content_type, $width=300, $height=225, $isCropped=false, $isFollowSize=true, $use_cache=true, $isProporsional=false)
+    {
+        $max_resize = 2048;
+        #kalu ukurannya melebihi maksimal resize yang diinginkan maka 
+        #diresize sampai ukuran maksimal nya saja
+        if($width > $max_resize || $height > $max_resize){
+        	#alternatif 1: tidak dikeluarkan apa2:
+        	return false;
+        	#alternatif 2: dikeluarkan sampai batas maksimal
+            // $width=$height=$max_resize; #keluarkan sampai batas maksimal dan square
+            #alternatif 3: dikeluarkan ukuran aslinya
+            // $isFollowSize=false; #keluarkan ukuran aslinya
+        }
+        if($isCropped)$mode=\Imagine\Image\ManipulatorInterface::THUMBNAIL_OUTBOUND;
+        else $mode=\Imagine\Image\ManipulatorInterface::THUMBNAIL_INSET;
+
+        $folder_storage =  \Yii::$app->params['folder_storage'];
+        $folder_cache   =  \Yii::$app->params['folder_cache'];
+
+
+        $file_on_system = PATH_RELATIVE.DIRECTORY_SEPARATOR.$folder_storage.DIRECTORY_SEPARATOR.$filename_real;
+        $target_dir = dirname(PATH_RELATIVE.DIRECTORY_SEPARATOR.$folder_cache.DIRECTORY_SEPARATOR.$filename_real);
+
+        #$file_prefix = $width."x".$height."-".(($isCropped)?"cropped-":"");
+		if($isProporsional){
+			// $height=0; #kalau fixed, maka height nya di set 0
+
+	        $img = \yii\imagine\Image::getImagine()->open(Yii::getAlias($file_on_system));
+
+    		$new_height = floor($width * ($img->getSize()->getHeight() / $img->getSize()->getWidth()));
+    		// if($new_height > $height){
+    		// 	$new_width = floor($height * ($img->getSize()->getWidth() / $img->getSize()->getHeight()));
+    		// 	$width = $new_width;
+    		// }else{
+    			$height=$new_height;
+    		// }
+		}
+
+        $file_prefix = $width."x".$height."-".(($isCropped)?"cropped-":"").(($isProporsional)?"proporsional-":"").$mode."-";
+
+
+        if(!is_dir($target_dir)){
+            if(!mkdir($target_dir,0777,true)) return false;
+        }
+
+        $target = realpath($target_dir).DIRECTORY_SEPARATOR.$file_prefix.basename($filename_real);
+        if(file_exists($target) && $use_cache){
+
+        }else{
+
+            Helper::thumbnail(Yii::getAlias($file_on_system),
+                $width, 
+                $height,
+                $mode,
+                $isCropped,
+                $isFollowSize
+                )
+                ->save($target, ['quality' => 80]);
+		}
+
+        self::viewBerkas($target, "", $filename, $content_type,false);
+
+        exit;
+    }
 
 }

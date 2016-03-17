@@ -1,4 +1,39 @@
-upload diletakkan di D:/UPLOAD
+
+HNR Helper
+==========
+
+File Uploader
+
+Tujuannya adalah untuk menyimpan file uploadan di luar folder web di Yii, kemudian orang dapat mengaksesnya melalui url dengan memasukkan id dan nama file yang di-request
+
+informasi dari file yang diupload disimpan di dalam database dengan informasi :
+- id
+- filename
+- filename_real
+- size
+- content_type
+- created_at
+- updated_at
+- id tambahan untuk referensi misalnya : id_publikasi, id_member, id_blog, dsb
+
+file migrasi untuk create tabel:
+
+
+        $this->createTable('t_media_file', [
+            'id'            => $this->primaryKey(),
+            'id_member'     => $this->integer()->notNull(),
+            'album_type'    => $this->smallInteger(1), //PROFIL,OTHER
+            'is_main'       => $this->smallInteger(1)->defaultValue(0),
+            'filename'      => $this->string(230), // image or cover photo
+            'filename_real' => $this->string(250),
+            'size'          => $this->integer()->defaultValue(0),
+            'content_type'  => $this->string(75),
+            'created_at'    => 'integer' ,
+            'updated_at'    => 'integer' ,
+        ]);
+
+
+misal upload diletakkan di D:/UPLOAD (kalau windows), atau _FILES di luar folder web di Yii
 
 script ada di C:/htdocs/app1/backend/web
 
