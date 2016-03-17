@@ -1,9 +1,9 @@
 {
 	"name": "hnr/helper",
-	"description": "hnrHelper especially for uploading and retrieve your uploaded files (images or documentes) outside yii web directory for security reason.",
+	"description": "hnrHelper main objective is especially for uploading and retrieving your uploaded files (images or documents) outside yii web directory for security reason.",
 	"version": "0.1",
     "type": "component",
-	"keywords": ["yii2 helper", "upload image", "resize image", "secure folder"],
+	"keywords": ["yii2 helper", "upload image", "upload doc", "resize image", "secure folder", "secure rename"],
 	"homepage": "https://github.com/rabbasa/hnrHelper#readme",
 	"license": "MIT",
     "authors": [
