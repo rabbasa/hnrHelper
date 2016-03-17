@@ -10,10 +10,7 @@
         {
             "name": "Harris Rabbasa"
         }
-    ]
-	"support": {
-		"email": "email"
-	},
+    ],
 	"require": {
 		"yiisoft/yii2-imagine": "~2.0.0"
 	}
